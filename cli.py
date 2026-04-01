@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 from turbomemory import TurboMemory
 
@@ -23,52 +24,71 @@ def cmd_add_memory(tm: TurboMemory, args):
 
 
 def cmd_query(tm: TurboMemory, args):
-    hits = tm.query(args.query, k=args.k, topic=args.topic)
+    hits = tm.query(
+        args.query,
+        k=args.k,
+        top_topics=args.top_topics,
+        min_confidence=args.min_confidence
+    )
 
     if not hits:
         print("No results.")
         return
 
-    for sim, topic, chunk in hits:
+    for score, topic, chunk in hits:
         print("=" * 70)
-        print(f"SIM: {sim:.4f}")
+        print(f"SCORE: {score:.4f}")
         print(f"TOPIC: {topic}")
         print(f"ID: {chunk.get('chunk_id')}")
         print(f"CONF: {chunk.get('confidence')}")
+        print(f"STALE: {chunk.get('staleness')}")
         print(f"TEXT: {chunk.get('text')}")
-        print(f"SOURCES: {chunk.get('source_refs')}")
+        print(f"TS: {chunk.get('timestamp')}")
 
 
 def cmd_stats(tm: TurboMemory, args):
     print(tm.stats())
 
 
+def cmd_rebuild(tm: TurboMemory, args):
+    tm.rebuild_index()
+    print("SQLite index rebuilt from topic files.")
+
+
 def main():
-    parser = argparse.ArgumentParser(description="TurboMemory CLI v0.1")
+    parser = argparse.ArgumentParser(description="TurboMemory CLI v0.2")
     parser.add_argument("--root", default="turbomemory_data", help="data directory")
 
     sub = parser.add_subparsers(dest="cmd")
 
+    # add_turn
     p = sub.add_parser("add_turn", help="append session log line")
     p.add_argument("--role", required=True, help="user/assistant/system")
     p.add_argument("--text", required=True)
-    p.add_argument("--session", default=None, help="session file override")
+    p.add_argument("--session", default=None)
 
+    # add_memory
     p = sub.add_parser("add_memory", help="store memory chunk")
     p.add_argument("--topic", required=True)
     p.add_argument("--text", required=True)
     p.add_argument("--confidence", type=float, default=0.8)
-    p.add_argument("--bits", type=int, default=6)
-    p.add_argument("--source", default=None, help="optional source ref")
-    p.add_argument("--log", action="store_true", help="also log as user turn")
-    p.add_argument("--session", default=None, help="session file override")
+    p.add_argument("--bits", type=int, default=6, choices=[4, 6, 8])
+    p.add_argument("--source", default=None)
+    p.add_argument("--log", action="store_true")
+    p.add_argument("--session", default=None)
 
+    # query
     p = sub.add_parser("query", help="search memory")
     p.add_argument("--query", required=True)
     p.add_argument("--k", type=int, default=5)
-    p.add_argument("--topic", default=None)
+    p.add_argument("--top_topics", type=int, default=5)
+    p.add_argument("--min_confidence", type=float, default=0.0)
 
+    # stats
     sub.add_parser("stats", help="show stats")
+
+    # rebuild index
+    sub.add_parser("rebuild", help="rebuild sqlite index from topic files")
 
     args = parser.parse_args()
 
@@ -86,6 +106,8 @@ def main():
         cmd_query(tm, args)
     elif args.cmd == "stats":
         cmd_stats(tm, args)
+    elif args.cmd == "rebuild":
+        cmd_rebuild(tm, args)
     else:
         print("Unknown command.")
 
