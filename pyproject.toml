@@ -5,14 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "turbomemory"
 version = "0.4.0"
-description = "Layered memory system with quantization, verification, and self-healing consolidation"
+description = "Claude-style long-term memory with 4/6/8-bit TurboQuant compression — runs on a laptop"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
     {name = "Kubenew"}
 ]
-keywords = ["memory", "quantization", "semantic-search", "embeddings", "vector-store"]
+keywords = ["memory", "quantization", "semantic-search", "embeddings", "vector-store", "langchain", "rag"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -31,12 +31,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+langchain = [
+    "langchain>=0.1.0",
+    "langchain-core>=0.1.0",
+]
+dashboard = [
+    "streamlit>=1.28.0",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "black>=23.0",
     "ruff>=0.1.0",
     "mypy>=1.0",
+]
+all = [
+    "turbomemory[langchain,dashboard,dev]",
 ]
 
 [project.scripts]
@@ -45,6 +55,13 @@ turbomemory = "turbomemory.cli:main"
 [project.urls]
 Homepage = "https://github.com/Kubenew/TurboMemory"
 Repository = "https://github.com/Kubenew/TurboMemory"
+Documentation = "https://github.com/Kubenew/TurboMemory#readme"
+Roadmap = "https://github.com/Kubenew/TurboMemory/blob/main/ROADMAP.md"
+Issues = "https://github.com/Kubenew/TurboMemory/issues"
+
+[project.entry-points."turbomemory.plugins"]
+# Custom plugins can be registered via entry points
+# Example: my_scorer = "my_package:MyQualityScorer"
 
 [tool.setuptools.packages.find]
 include = ["turbomemory*"]
