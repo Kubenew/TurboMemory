@@ -1,28 +1,34 @@
 #!/usr/bin/env python3
-# TurboMemory v0.2 daemon manager
-# Starts consolidator.py in a forked subprocess and writes PID file.
+"""TurboMemory v0.3 daemon manager with proper logging."""
 
 import os
 import sys
 import time
 import argparse
 import subprocess
+import logging
 from pathlib import Path
 
+logger = logging.getLogger(__name__)
 
-def pid_path(root: str):
+
+def pid_path(root: str) -> Path:
     return Path(root) / "lock" / "consolidator.pid"
+
+
+def log_path(root: str) -> Path:
+    return Path(root) / "lock" / "consolidator.log"
 
 
 def is_running(pid: int) -> bool:
     try:
         os.kill(pid, 0)
         return True
-    except:
+    except OSError:
         return False
 
 
-def start_daemon(root: str, interval_sec: int):
+def start_daemon(root: str, interval_sec: int, log_level: str = "INFO") -> None:
     pfile = pid_path(root)
     pfile.parent.mkdir(parents=True, exist_ok=True)
 
@@ -32,30 +38,35 @@ def start_daemon(root: str, interval_sec: int):
             if is_running(pid):
                 print(f"Daemon already running (pid={pid})")
                 return
-        except:
+        except (ValueError, OSError):
             pass
+
+    log_file = log_path(root)
+    log_file.parent.mkdir(parents=True, exist_ok=True)
 
     cmd = [
         sys.executable,
         "consolidator.py",
         "--root", root,
         "--daemon",
-        "--interval_sec", str(interval_sec)
+        "--interval_sec", str(interval_sec),
+        "--log-level", log_level,
     ]
 
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        cwd=os.path.dirname(os.path.abspath(__file__)),
-        start_new_session=True
-    )
+    with open(log_file, "a") as lf:
+        proc = subprocess.Popen(
+            cmd,
+            stdout=lf,
+            stderr=lf,
+            cwd=os.path.dirname(os.path.abspath(__file__)),
+            start_new_session=True,
+        )
 
     pfile.write_text(str(proc.pid), encoding="utf-8")
-    print(f"Daemon started pid={proc.pid}")
+    print(f"Daemon started pid={proc.pid}, log: {log_file}")
 
 
-def stop_daemon(root: str):
+def stop_daemon(root: str) -> None:
     pfile = pid_path(root)
     if not pfile.exists():
         print("No PID file found.")
@@ -64,19 +75,29 @@ def stop_daemon(root: str):
     pid = int(pfile.read_text().strip())
     try:
         os.kill(pid, 15)
-        time.sleep(0.3)
-    except Exception as e:
-        print("Stop error:", str(e))
+        # Wait for graceful shutdown
+        for _ in range(10):
+            if not is_running(pid):
+                break
+            time.sleep(0.3)
+        else:
+            # Force kill if still running
+            try:
+                os.kill(pid, 9)
+            except OSError:
+                pass
+    except OSError as e:
+        logger.warning(f"Stop error: {e}")
 
     try:
         pfile.unlink()
-    except:
+    except OSError:
         pass
 
     print("Daemon stopped.")
 
 
-def status_daemon(root: str):
+def status_daemon(root: str) -> None:
     pfile = pid_path(root)
     if not pfile.exists():
         print("Daemon not running.")
@@ -87,17 +108,22 @@ def status_daemon(root: str):
         print(f"Daemon running pid={pid}")
     else:
         print("PID file exists but process is dead.")
+        try:
+            pfile.unlink()
+        except OSError:
+            pass
 
 
 def main():
-    parser = argparse.ArgumentParser(description="TurboMemory daemon manager")
+    parser = argparse.ArgumentParser(description="TurboMemory daemon manager v0.3")
     parser.add_argument("--root", default="turbomemory_data")
     parser.add_argument("cmd", choices=["start", "stop", "status"])
     parser.add_argument("--interval_sec", type=int, default=120)
+    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     args = parser.parse_args()
 
     if args.cmd == "start":
-        start_daemon(args.root, args.interval_sec)
+        start_daemon(args.root, args.interval_sec, args.log_level)
     elif args.cmd == "stop":
         stop_daemon(args.root)
     else:
