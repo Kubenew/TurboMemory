@@ -45,6 +45,26 @@ pytest tests/ -v --cov=turbomemory --cov-report=html
 pytest tests/test_turbomemory.py -v
 ```
 
+### Running Benchmarks
+
+```bash
+# Run default benchmark suite
+python -m turbomemory.benchmark
+
+# Run specific benchmarks
+python -c "
+from turbomemory.benchmark import MemoryBenchmark, BenchmarkConfig
+config = BenchmarkConfig(
+    num_vectors=10000,
+    bit_depths=[4, 6, 8],
+    num_queries=100
+)
+bench = MemoryBenchmark(config)
+results = bench.run_all()
+bench.print_summary()
+"
+```
+
 ### Code Style
 
 We use **Black** for formatting and **Ruff** for linting:

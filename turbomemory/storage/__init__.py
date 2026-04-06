@@ -64,6 +64,9 @@ class SQLitePool:
         conn.execute("PRAGMA cache_size=-64000;")
         conn.execute("PRAGMA foreign_keys=ON;")
         conn.execute("PRAGMA temp_store=MEMORY;")
+        conn.execute("PRAGMA mmap_size=268435456;")  # 256MB memory-mapped I/O
+        conn.execute("PRAGMA page_size=4096;")
+        conn.execute("PRAGMA auto_vacuum=INCREMENTAL;")
         return conn
 
     def get_connection(self) -> sqlite3.Connection:
