@@ -1,0 +1,17 @@
+numpy
+sentence-transformers
+matplotlib
+fastapi
+uvicorn
+python-multipart
+pytest
+pytest-cov
+pytest-asyncio
+black
+ruff
+mypy
+pyright
+cryptography
+faiss-cpu
+pydantic
+-e .
