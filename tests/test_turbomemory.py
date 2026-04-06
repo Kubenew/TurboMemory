@@ -6,17 +6,16 @@ import tempfile
 import numpy as np
 from datetime import datetime, timezone, timedelta
 
-from turbomemory.turbomemory import (
+from turbomemory import (
     TurboMemory,
     TurboMemoryConfig,
     quantize_packed,
     dequantize_packed,
-    cosine_sim,
+    cosine_similarityilarity,
     pack_unsigned,
     unpack_unsigned,
-    now_iso,
-    sha1_text,
 )
+from turbomemory.core import now_iso, sha1_text
 
 
 @pytest.fixture
@@ -44,7 +43,7 @@ class TestQuantization:
 
         reconstructed = dequantize_packed(q)
         assert reconstructed.shape == vec.shape
-        sim = cosine_sim(vec, reconstructed)
+        sim = cosine_similarity(vec, reconstructed)
         assert sim > 0.95
 
     def test_quantize_dequantize_4bit(self):
@@ -55,7 +54,7 @@ class TestQuantization:
 
         reconstructed = dequantize_packed(q)
         assert reconstructed.shape == vec.shape
-        sim = cosine_sim(vec, reconstructed)
+        sim = cosine_similarity(vec, reconstructed)
         assert sim > 0.90
 
     def test_quantize_dequantize_8bit(self):
@@ -66,7 +65,7 @@ class TestQuantization:
 
         reconstructed = dequantize_packed(q)
         assert reconstructed.shape == vec.shape
-        sim = cosine_sim(vec, reconstructed)
+        sim = cosine_similarity(vec, reconstructed)
         assert sim > 0.99
 
     def test_invalid_bits(self):
@@ -90,22 +89,22 @@ class TestQuantization:
 class TestCosineSim:
     def test_identical_vectors(self):
         a = np.array([1.0, 2.0, 3.0])
-        assert abs(cosine_sim(a, a) - 1.0) < 1e-6
+        assert abs(cosine_similarity(a, a) - 1.0) < 1e-6
 
     def test_orthogonal_vectors(self):
         a = np.array([1.0, 0.0, 0.0])
         b = np.array([0.0, 1.0, 0.0])
-        assert abs(cosine_sim(a, b)) < 1e-6
+        assert abs(cosine_similarity(a, b)) < 1e-6
 
     def test_opposite_vectors(self):
         a = np.array([1.0, 2.0, 3.0])
         b = np.array([-1.0, -2.0, -3.0])
-        assert cosine_sim(a, b) < -0.99
+        assert cosine_similarity(a, b) < -0.99
 
     def test_zero_vector(self):
         a = np.array([0.0, 0.0, 0.0])
         b = np.array([1.0, 2.0, 3.0])
-        assert cosine_sim(a, b) == 0.0
+        assert cosine_similarity(a, b) == 0.0
 
 
 class TestTurboMemory:

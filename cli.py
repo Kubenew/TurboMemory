@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""TurboMemory CLI v0.4 - Command-line interface for TurboMemory."""
+"""TurboMemory CLI v0.5 - Command-line interface for TurboMemory."""
 
 import argparse
 import json
 import sys
-from turbomemory.turbomemory import TurboMemory, TurboMemoryConfig
+from turbomemory import TurboMemory, TurboMemoryConfig
 
 
 def cmd_add_turn(tm: TurboMemory, args):
@@ -231,6 +231,35 @@ def main():
     p.add_argument("--source", required=True, help="source topic")
     p.add_argument("--target", required=True, help="target topic")
 
+    # sync
+    p = sub.add_parser("sync", help="sync with remote node")
+    p.add_argument("--remote", required=True, help="remote URL")
+    p.add_argument("--bidirectional", action="store_true", help="full bidirectional sync")
+
+    # sync-pull
+    p = sub.add_parser("sync-pull", help="pull from remote")
+    p.add_argument("--remote", required=True, help="remote URL")
+
+    # sync-push
+    p = sub.add_parser("sync-push", help="push to remote")
+    p.add_argument("--remote", required=True, help="remote URL")
+
+    # sync-status
+    p = sub.add_parser("sync-status", help="show sync status")
+
+    # bundle
+    p = sub.add_parser("bundle", help="create portable bundle")
+    p.add_argument("--output", required=True, help="output .tmb file")
+
+    # validate
+    p = sub.add_parser("validate", help="validate TMF integrity")
+    p.add_argument("--path", default=None, help="path to validate")
+
+    # hybrid search
+    p = sub.add_parser("hybrid", help="hybrid search (BM25 + vector)")
+    p.add_argument("--query", required=True, help="search query")
+    p.add_argument("--top_k", type=int, default=10, help="number of results")
+
     # metrics (JSON)
     sub.add_parser("metrics", help="output metrics as JSON")
 
@@ -277,6 +306,42 @@ def main():
             cmd_merge(tm, args)
         elif args.cmd == "metrics":
             cmd_metrics(tm, args)
+        elif args.cmd == "sync":
+            from turbomemory.replication import create_sync
+            sync = create_sync(tm.root, args.remote)
+            result = sync.sync()
+            print(json.dumps(result, indent=2))
+        elif args.cmd == "sync-pull":
+            from turbomemory.replication import create_sync
+            sync = create_sync(tm.root, args.remote)
+            result = sync.pull()
+            print(json.dumps(result, indent=2))
+        elif args.cmd == "sync-push":
+            from turbomemory.replication import create_sync
+            sync = create_sync(tm.root, args.remote)
+            result = sync.push()
+            print(json.dumps(result, indent=2))
+        elif args.cmd == "sync-status":
+            from turbomemory.sync import SyncNode
+            node = SyncNode(tm.root)
+            status = node.get_status()
+            print(json.dumps(status, indent=2))
+        elif args.cmd == "bundle":
+            from turbomemory.formats.tmf import TMFFormat
+            tmf = TMFFormat(tm.root)
+            result = tmf.export(args.output)
+            print(f"Bundle created: {result}")
+        elif args.cmd == "validate":
+            from turbomemory.formats import validate_format
+            path = args.path or tm.root
+            result = validate_format(path)
+            print(json.dumps(result, indent=2))
+        elif args.cmd == "hybrid":
+            from turbomemory.hybrid_search import HybridSearchEngine
+            engine = HybridSearchEngine(tm.root)
+            results = engine.search(args.query, top_k=args.top_k)
+            for r in results:
+                print(f"{r['doc_id']}: {r['score']:.4f} [{r['source']}]")
         else:
             print("Unknown command.")
     finally:

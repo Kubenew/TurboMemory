@@ -4,17 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "turbomemory"
-version = "0.4.0"
-description = "Claude-style long-term memory with 4/6/8-bit TurboQuant compression — runs on a laptop"
+version = "0.5.0"
+description = "Lightweight semantic storage engine with compressed embedding archives"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
     {name = "Kubenew"}
 ]
-keywords = ["memory", "quantization", "semantic-search", "embeddings", "vector-store", "langchain", "rag"]
+keywords = ["memory", "quantization", "semantic-search", "embeddings", "vector-store", "langchain", "rag", "local-first"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -35,22 +35,40 @@ langchain = [
     "langchain>=0.1.0",
     "langchain-core>=0.1.0",
 ]
+llamaindex = [
+    "llama-index>=0.9.0",
+]
 dashboard = [
     "streamlit>=1.28.0",
+]
+server = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "pydantic>=2.0.0",
+    "requests>=2.31.0",
+]
+faiss = [
+    "faiss-cpu>=1.7.0",
+]
+encryption = [
+    "cryptography>=41.0.0",
 ]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
+    "pytest-asyncio>=0.21.0",
     "black>=23.0",
     "ruff>=0.1.0",
     "mypy>=1.0",
+    "pyright>=1.1.0",
 ]
 all = [
-    "turbomemory[langchain,dashboard,dev]",
+    "turbomemory[langchain,llamaindex,dashboard,server,faiss,encryption,dev]",
 ]
 
 [project.scripts]
 turbomemory = "turbomemory.cli:main"
+turbomemory-server = "turbomemory.api.server:run_server"
 
 [project.urls]
 Homepage = "https://github.com/Kubenew/TurboMemory"
@@ -61,7 +79,6 @@ Issues = "https://github.com/Kubenew/TurboMemory/issues"
 
 [project.entry-points."turbomemory.plugins"]
 # Custom plugins can be registered via entry points
-# Example: my_scorer = "my_package:MyQualityScorer"
 
 [tool.setuptools.packages.find]
 include = ["turbomemory*"]
@@ -69,6 +86,8 @@ include = ["turbomemory*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+asyncio_mode = "auto"
+addopts = "-ra -q --strict-markers"
 
 [tool.black]
 line-length = 100
@@ -77,8 +96,22 @@ target-version = ["py39"]
 [tool.ruff]
 line-length = 100
 target-version = "py39"
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "T20"]
+ignore = ["E501", "B008"]
+fixable = ["ALL"]
+unfixable = []
 
 [tool.mypy]
 python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
+ignore_missing_imports = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pyright]
+include = ["turbomemory"]
+pythonVersion = "3.9"
+typeCheckingMode = "basic"
+reportMissingImports = true
+reportMissingTypeStubs = false
