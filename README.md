@@ -1,216 +1,230 @@
-# TurboMemory
+# TurboMemory ⚡
 
-> **Claude-style long-term memory with 4/6/8-bit TurboQuant compression — runs on a laptop.**
+**TurboMemory is a lightweight semantic storage engine for compressed embedding archives.**
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI](https://github.com/Kubenew/TurboMemory/actions/workflows/ci.yml/badge.svg)](https://github.com/Kubenew/TurboMemory/actions/workflows/ci.yml)
-[![PyPI version](https://badge.fury.io/py/turbomemory.svg)](https://badge.fury.io/py/turbomemory)
-[![Downloads](https://pepy.tech/badge/turbomemory)](https://pepy.tech/project/turbomemory)
+It combines:
+- **SQLite metadata indexing**
+- **append-only transcript logging**
+- **quantized embedding storage** (4-bit / 6-bit / 8-bit packed format)
+- **topic-based partitioning + centroid prefiltering**
+- **background consolidation** (merge / prune / deduplicate)
+- optional **confidence decay** + **contradiction detection**
 
-[🚀 Live Demo (Colab)](https://colab.research.google.com/github/Kubenew/TurboMemory/blob/main/notebooks/demo.ipynb) · [📖 Docs](#readme) · [🗺️ Roadmap](ROADMAP.md) · [💬 Discussions](https://github.com/Kubenew/TurboMemory/discussions)
+TurboMemory is designed for **local-first semantic search**, offline RAG, and edge deployments.
+
+> Goal: deliver "SQLite simplicity" for semantic memory + compressed vector storage.
 
 ---
 
 ## Why TurboMemory?
 
-| Feature | TurboMemory | Mem0 | Zep | LangMem |
-|---------|:-----------:|:----:|:---:|:-------:|
-| **Embedding Compression** | ✅ 4/6/8-bit packed | ❌ | ❌ | ❌ |
-| **Self-Healing (autoDream)** | ✅ Merge, dedupe, resolve contradictions | Partial | Partial | ❌ |
-| **Retrieval Verification** | ✅ Cross-reference scoring | ❌ | ❌ | ❌ |
-| **Quality Scoring** | ✅ Confidence + freshness + specificity | ❌ | ❌ | ❌ |
-| **Exclusion Rules** | ✅ Configurable "what NOT to store" | ❌ | ❌ | ❌ |
-| **Runs on Laptop** | ✅ SQLite + local models | ⚠️ Needs vector DB | ❌ Needs server | ⚠️ Needs vector DB |
-| **Memory Size (10K chunks)** | ~5 MB (6-bit) | ~150 MB | ~200 MB | ~150 MB |
-| **Open Source** | ✅ MIT | ✅ Apache 2.0 | ✅ | ✅ |
-| **Plugin System** | ✅ Scorers, providers, storage | ❌ | ❌ | ❌ |
+Embedding storage is expensive:
+- float32 vectors consume large disk space
+- most vector DBs are heavy to deploy
+- local-first apps need portable storage formats
 
-**The compression advantage:** TurboMemory's 6-bit quantization stores embeddings at **~25% the size** of full float32 with >0.95 cosine similarity. That means 10,000 memories in ~5 MB instead of ~150 MB.
-
----
-
-## Want to Help? Pick a Good First Issue!
-
-We especially need:
-- **Benchmarks** — Compare vs Mem0, Zep, LangMem
-- **LangChain integration** — Retriever + chat history (started, needs testing)
-- **Web dashboard** — Streamlit app for browsing memories
-- **Documentation** — Tutorials, API docs, architecture diagrams
-
-👉 [Good First Issues](https://github.com/Kubenew/TurboMemory/labels/good%20first%20issue) · [Contributing Guide](CONTRIBUTING.md)
-
----
-
-## Quick Start
-
-```bash
-pip install -e .
-```
-
-```python
-from turbomemory import TurboMemory
-
-with TurboMemory(root="my_memory") as tm:
-    # Add memory
-    tm.add_memory("python", "Python uses dynamic typing and garbage collection")
-
-    # Query with verification
-    results = tm.verify_and_score("How does Python work?")
-    for score, topic, chunk, verif in results:
-        print(f"{'✓' if verif.verified else '?'} {chunk['text']}")
-```
-
----
-
-## Design Principles
-
-> **Memory = index, not storage**
-> `MEMORY.md` stores only pointers (~150 chars/line). Actual knowledge lives in topic files.
-
-> **3-layer bandwidth-aware design**
-> Index (always) → Topics (on-demand) → Transcripts (append-only)
-
-> **Strict write discipline**
-> Write to file, then update index. Never dump content into the index.
-
-> **Background memory rewriting (autoDream)**
-> Merges duplicates, resolves contradictions, converts vague → absolute. Memory is continuously edited.
-
-> **Staleness is first-class**
-> If memory ≠ reality, memory is wrong. Code-derived facts are never stored.
-
-> **Retrieval is skeptical, not blind**
-> Memory is a hint, not truth. Cross-reference verification before use.
-
-> **What we don't store is the real insight**
-> No debug logs, no code structure, no PR history. If derivable, don't persist.
+TurboMemory solves this by using **TurboQuant-style packing** to store embeddings efficiently while still enabling fast retrieval.
 
 ---
 
 ## Features
 
-### Core
-- SQLite index with connection pooling
-- Packed quantization (4-bit / 6-bit / 8-bit) — **up to 8x compression**
-- Topic centroid prefilter for fast retrieval
-- Contradiction detection + confidence decay
-- TTL (time-to-live) for memory chunks
+### Storage
+- Append-only transcript/event log (durable ingestion)
+- Topic-based storage files (load-on-demand)
+- SQLite index for metadata + fast filtering
+- Packed embedding formats: **4-bit / 6-bit / 8-bit**
 
-### Verification
-- Cross-reference verification across topics
-- Agreement scoring between related chunks
-- Contradiction flagging during retrieval
-- Optional "verified-only" query mode
+### Retrieval
+- centroid/topic prefilter to reduce search space
+- configurable scoring pipeline
+- optional verification filtering
 
-### Quality Scoring
-- Per-chunk quality scores (confidence + freshness + specificity + verification)
-- Automatic quality decay over time
-- Quality-based ranking adjustments
-
-### Exclusion Rules
-- Configurable patterns for what NOT to store
-- Blocks: debug output, code snippets, secrets, PR history
-- Exclusion logging for auditability
-
-### Self-Healing Consolidation
-- Semantic merging of similar chunks
-- Contradiction resolution (older chunks decayed)
-- Vague-to-absolute language conversion
-- Aggressive deduplication and pruning
-
-### Observability
-- Per-topic health scores (0.0 - 1.0)
-- Consolidation event logging
-- Comprehensive metrics (JSON output)
-
-### Plugin System
-- Custom quality scorers
-- Custom embedding providers
-- Custom storage backends (Redis, PostgreSQL, etc.)
-- Custom verification strategies
-
-### Integrations
-- **LangChain** — `TurboMemoryRetriever`, `TurboMemoryChatMessageHistory`
-- **CrewAI** — Memory provider example
-- More coming: AutoGen, LlamaIndex, Haystack
+### Maintenance / Self-Healing
+- background consolidation daemon
+- deduplication and merging of similar chunks
+- TTL expiration + confidence decay
+- experimental contradiction detection
 
 ---
 
-## Usage
+## Use Cases
 
-### CLI
+TurboMemory can be used as:
+- compressed semantic archive for large text corpora
+- long-term memory backend for AI agents
+- offline semantic search engine for notes/transcripts
+- lightweight RAG store on laptop/VPS/edge devices
+- persistent audit log + recall layer for autonomous systems
+
+---
+
+## Quickstart
+
+### Install
 
 ```bash
-# Add memory
-python cli.py add_memory --topic turboquant.video --text "TurboQuant-v3 uses block matching" --bits 6
-
-# Query with verification
-python cli.py query --query "How does TurboQuant work?" --verify
-
-# Stats with topic health
-python cli.py stats
-
-# Consolidate
-python consolidator.py
+git clone https://github.com/Kubenew/TurboMemory.git
+cd TurboMemory
+pip install -r requirements.txt
 ```
 
-### LangChain
+### CLI Usage
+
+```bash
+python cli.py add_memory --topic notes --text "TurboMemory stores semantic chunks efficiently."
+python cli.py query --query "semantic storage"
+```
+
+### Python Usage
 
 ```python
-from turbomemory.integrations.langchain import TurboMemoryRetriever
+from turbomemory import TurboMemory
 
-retriever = TurboMemoryRetriever(root="my_memory", k=5, enable_verification=True)
-docs = retriever.invoke("What is TurboQuant?")
-```
+tm = TurboMemory(root="./tm_data")
 
-### Streamlit Dashboard
+tm.add_memory(
+    topic="notes",
+    text="TurboMemory stores semantic chunks efficiently.",
+    ttl_days=365
+)
 
-```bash
-pip install streamlit
-streamlit run dashboard.py
+results = tm.query("semantic storage", k=5)
+
+for score, topic, chunk in results:
+    print(score, chunk["text"])
 ```
 
 ---
 
-## Compression Benchmarks
+## Repository Structure
 
-| Bits | Original (384-dim) | Compressed | Ratio | Similarity |
-|------|-------------------|------------|-------|------------|
-| 4-bit | 1536 bytes | ~192 bytes | 8.0x | >0.90 |
-| 6-bit | 1536 bytes | ~288 bytes | 5.3x | >0.95 |
-| 8-bit | 1536 bytes | ~384 bytes | 4.0x | >0.99 |
-
-Run benchmarks: `python -m benchmarks.compression_bench`
+```
+TurboMemory/
+├── turbomemory/              # core package
+│   ├── __init__.py
+│   ├── turbomemory.py        # core storage/retrieval engine
+│   ├── plugins/              # plugin system
+│   └── integrations/         # LangChain, etc.
+├── cli.py                    # command-line interface
+├── consolidator.py           # merging/pruning logic
+├── daemon.py                 # background maintenance daemon
+├── dashboard.py              # Streamlit dashboard
+├── tests/                    # unit tests
+├── benchmarks/               # benchmark scripts
+├── examples/                 # usage examples
+└── notebooks/                # Colab demos
+```
 
 ---
 
-## Architecture
+## Architecture Overview
 
-```
-MEMORY.md (index, always loaded)
-    ↓
-topics/*.tmem (structured topic files, loaded on demand)
-    ↓
-sessions/*.jsonl (immutable logs, appended only)
-    ↓
-db/index.sqlite (fast retrieval, connection pooled)
-    ↓
-plugins/ (custom scorers, providers, storage, verification)
-```
+TurboMemory uses a layered approach:
+
+### 1) Index Layer (SQLite)
+
+SQLite stores:
+- chunk metadata
+- topic pointers
+- timestamps
+- quality/confidence scores
+- optional verification flags
+
+### 2) Vector Storage Layer (Packed Embeddings)
+
+Embeddings are stored in compact binary form:
+- 8-bit packed
+- 6-bit packed
+- 4-bit packed
+
+This enables high compression ratios compared to float32 vectors.
+
+### 3) Transcript Log Layer (Append-only)
+
+Raw events are stored as append-only logs:
+- insert operations
+- merges/consolidation events
+- pruning actions
+
+This design supports replication/sync in future versions.
+
+### 4) Consolidation Daemon
+
+A background process periodically:
+- merges similar chunks
+- removes duplicates
+- decays outdated memory confidence
+- rebuilds centroids/index if needed
+
+---
+
+## Design Principles
+
+TurboMemory is built around:
+- **local-first operation**
+- **small footprint**
+- **portable storage format**
+- **append-only durability**
+- **compression-first vector storage**
+- **self-healing maintenance**
+- **minimal dependencies**
+
+---
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md)
+
+Upcoming major milestones:
+- v0.3: stability + CI + packaging
+- v0.4: benchmarks + profiling
+- v0.5: TurboMemory Format (TMF v1) stable file spec
+- v0.6: hybrid search (keyword + vector fusion)
+- v0.7: server mode (FastAPI)
+- v0.8: replication / edge sync
+
+---
+
+## Benchmarks (Planned)
+
+Benchmarks will include:
+- insert throughput (chunks/sec)
+- query latency (top-k)
+- disk usage by bit-width (float32 vs 8-bit vs 6-bit vs 4-bit)
+- recall quality comparisons
 
 ---
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Contributions are welcome.
 
-**Good first issues:** [View issues](https://github.com/Kubenew/TurboMemory/labels/good%20first%20issue)
+Start here:
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [Good First Issues](https://github.com/Kubenew/TurboMemory/labels/good%20first%20issue)
 
-**Roadmap:** [ROADMAP.md](ROADMAP.md)
+We actively label issues as:
+- `good first issue`
+- `help wanted`
+- `advanced`
 
 ---
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+MIT License.
+
+---
+
+## Disclaimer
+
+TurboMemory is an experimental project.
+
+Interfaces and storage formats may change until v1.0.
+
+---
+
+## Contact
+
+Open an issue or discussion for feedback, feature requests, or collaboration.

@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  turbomemory:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - .:/app
+    command: ["python", "-c", "import turbomemory; print(turbomemory.__version__)"]
+    environment:
+      - PYTHONUNBUFFERED=1

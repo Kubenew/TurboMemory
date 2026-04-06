@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  turbomemory:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: turbomemory
+    ports:
+      - "8000:8000"
+    volumes:
+      - tm_data:/data
+    environment:
+      - TURBOMEMORY_HOST=0.0.0.0
+      - TURBOMEMORY_PORT=8000
+      - TURBOMEMORY_DATA_DIR=/data
+      - TURBOMEMORY_API_KEY=${TURBOMEMORY_API_KEY:-}
+      - TURBOMEMORY_LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  tm_data:
+    driver: local
+
+---
+version: "3.8"
+
+services:
+  turbomemory:
+    image: turbomemory:latest
+    container_name: turbomemory
+    ports:
+      - "8000:8000"
+    volumes:
+      - tm_data:/data
+    environment:
+      - TURBOMEMORY_HOST=0.0.0.0
+      - TURBOMEMORY_PORT=8000
+      - TURBOMEMORY_DATA_DIR=/data
+      - TURBOMEMORY_API_KEY=${TURBOMEMORY_API_KEY:-}
+      - TURBOMEMORY_LOG_LEVEL=INFO
+    restart: unless-stopped

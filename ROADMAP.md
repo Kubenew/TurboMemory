@@ -1,128 +1,223 @@
-# TurboMemory 2026 Roadmap
+# TurboMemory Roadmap 🚀
 
 > Claude-style long-term memory with 4/6/8-bit TurboQuant compression — runs on a laptop.
 
-## Current Status: v0.4
+---
+
+# Vision
+
+TurboMemory aims to become:
+- **SQLite-like simplicity** for semantic memory
+- **Parquet-like storage efficiency** for embeddings via TurboQuant
+- **Edge-first replication** for distributed memory networks
+- **Self-healing memory** via background consolidation
+
+---
+
+# Current Status: v0.4 (✅ Implemented)
 
 - [x] Core memory engine with SQLite + quantization
+- [x] Packed 4-bit / 6-bit / 8-bit embedding storage
+- [x] Topic-based segmentation with centroid prefilter
 - [x] Retrieval verification with cross-checking
 - [x] Quality scoring + decay
 - [x] Exclusion rules (what NOT to store)
-- [x] Self-healing consolidation (autoDream)
+- [x] Self-healing consolidation (merge/prune, contradiction resolution)
 - [x] Observability + metrics
 - [x] Plugin system for extensibility
+- [x] LangChain integrations (retriever, chat history)
+- [x] CLI with stats, search, verification flags
+- [x] Streamlit dashboard scaffold
+
+**What's NOT implemented yet:** PyPI, benchmarks, storage format spec, hybrid search, server mode
 
 ---
 
-## Phase 1: Community Foundation (Q2 2026)
+# v0.5 — Storage Format Specification (TMF v1)
 
-### PyPI Package
-- [ ] Publish to PyPI (`pip install turbomemory`)
-- [ ] GitHub Releases with changelog
-- [ ] Semantic versioning workflow
+**Goal:** define a stable storage format (Parquet-like for semantic memory).
 
-### Framework Integrations
-- [ ] **LangChain / LangGraph** — `TurboMemoryRetriever`, `TurboMemoryChatHistory`
-- [ ] **CrewAI** — Memory provider for agents
-- [ ] **AutoGen** — Memory backend for multi-agent conversations
-- [ ] **LlamaIndex** — Vector store integration
-- [ ] **Haystack** — Document store adapter
+### Deliverables
+- [ ] Define "TurboMemory Format (TMF)" v1 spec:
+  - `.tmindex` (SQLite metadata index)
+  - `.tmvec` (packed vectors file)
+  - `.tmlog` (append-only transcript/event log)
+  - `.tmmeta.json` (schema + model metadata)
+- [ ] Schema versioning + migrations
+- [ ] Checksum verification + corruption detection
+- [ ] Deterministic serialization format for vectors
+- [ ] Fast export/import tooling
 
-### Web Dashboard
-- [ ] Streamlit app for browsing topics
-- [ ] View quality scores per chunk
-- [ ] Trigger consolidation from UI
-- [ ] Search and filter memories
-- [ ] Export/import functionality
-
-### Benchmark Suite
-- [ ] Memory usage comparison vs Mem0, Zep, LangMem
-- [ ] Latency benchmarks (add/query/consolidate)
-- [ ] Accuracy on LOCOMO or custom dataset
-- [ ] Compression ratio analysis (4/6/8-bit)
-
-### Developer Experience
-- [ ] Colab notebook demo (one-click try)
-- [ ] Hugging Face Space
-- [ ] Docker image for easy deployment
-- [ ] More example notebooks
+### Metrics
+- Storage can be copied between machines and loaded instantly
 
 ---
 
-## Phase 2: Community Magnets (Q3 2026)
+# v0.6 — Hybrid Search (Vector + Keyword)
 
-### Multi-Modal Support
-- [ ] Image embeddings with same quantization
-- [ ] Video frame embeddings
-- [ ] Audio embeddings
-- [ ] Cross-modal retrieval
+**Goal:** become usable for real RAG and enterprise search.
 
-### Temporal Graph Layer
-- [ ] Entity extraction from memories
-- [ ] Relationship graph between topics
-- [ ] Temporal reasoning (before/after)
-- [ ] Graph-based retrieval
+### Deliverables
+- [ ] BM25 or keyword search fallback
+- [ ] Scoring fusion:
+  - vector similarity score
+  - keyword score
+  - recency score
+  - confidence score
+- [ ] Metadata filters:
+  - time range
+  - topic filter
+  - tags/namespace filter
+- [ ] Query explain output (debug mode)
 
-### Multi-User / Per-Agent Memory
-- [ ] Namespaced memory stores
-- [ ] Memory sharing between agents
-- [ ] Access control
-- [ ] Cross-agent queries
-
-### Edge / Mobile
-- [ ] Quantized models for edge deployment
-- [ ] Mobile-friendly memory store
-- [ ] Offline-first design
-- [ ] Sync protocol
-
-### Open Standards
-- [ ] Memory export in standard formats
-- [ ] Import from Mem0, Zep, LangMem
-- [ ] Migration tools
-- [ ] Interoperability layer
+### Metrics
+- Improved retrieval accuracy on real datasets
+- Stable query API supporting filters
 
 ---
 
-## Phase 3: Platform (Q4 2026)
+# v0.7 — Server Mode (Microservice API)
 
-### Memory-as-a-Tool for Agents
-- [ ] Agent can call `memory.query()` directly
-- [ ] Agent can trigger `memory.consolidate()`
-- [ ] Self-improving memory loop
-- [ ] Agent memory introspection
+**Goal:** allow TurboMemory to run as a service.
 
-### Plugin Ecosystem
-- [ ] Custom quality scorers
-- [ ] Custom embedding providers
-- [ ] Custom storage backends (Redis, PostgreSQL, etc.)
-- [ ] Custom verification strategies
-- [ ] Plugin marketplace
+### Deliverables
+- [ ] REST API (FastAPI):
+  - `/add`
+  - `/bulk_add`
+  - `/query`
+  - `/delete`
+  - `/stats`
+- [ ] Multi-tenant namespaces
+- [ ] API key auth
+- [ ] Docker image
+- [ ] Rate limiting / request validation
 
-### Hosted Demo
-- [ ] Replicate deployment
-- [ ] Hugging Face Space
-- [ ] Free tier for testing
-- [ ] API access
-
-### Enterprise Features
-- [ ] Multi-tenant support
-- [ ] SSO / authentication
-- [ ] Audit logging
-- [ ] SLA guarantees
+### Metrics
+- Stable service running on VPS with <500MB RAM
 
 ---
 
-## How to Help
+# v0.8 — Replication & Sync (Edge-first)
 
-| Area | What We Need | Difficulty |
-|------|-------------|------------|
-| **LangChain Integration** | Build retriever + chat history | Medium |
-| **Benchmarks** | Compare vs Mem0/Zep/LangMem | Medium |
-| **Web Dashboard** | Streamlit/Gradio UI | Easy |
-| **Documentation** | Tutorials, API docs | Easy |
-| **Testing** | More unit/integration tests | Easy |
-| **Multi-Modal** | Image/video embedding support | Hard |
-| **Plugin System** | Extend for custom backends | Medium |
-| **Docker/Edge** | Containerize + optimize | Medium |
+**Goal:** local-first semantic DB that syncs like Git/WAL.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to get started!
+### Deliverables
+- [ ] Log-based replication:
+  - Node A asks Node B for missing offsets
+  - Node B streams missing `.tmlog` events
+- [ ] Conflict handling policy:
+  - Append-only ID uniqueness
+  - Merge rules for duplicates
+- [ ] Sync over HTTP
+- [ ] Optional encryption for replication payload
+
+### Metrics
+- 2 nodes can sync 100k memories reliably
+- Idempotent sync (safe to retry)
+
+---
+
+# v0.9 — Index Acceleration (Optional HNSW/IVF)
+
+**Goal:** make retrieval fast for millions of vectors.
+
+### Deliverables
+- [ ] Optional HNSW index module
+- [ ] IVF centroid bucket acceleration
+- [ ] Caching layer for hot topics
+- [ ] Multi-thread query execution
+- [ ] Vector block prefetching
+
+### Metrics
+- Query latency remains low at 1M+ chunks on CPU
+
+---
+
+# v1.0 — Production Core Release
+
+**Goal:** stable foundation usable in real apps.
+
+### Deliverables
+- [ ] Stable API freeze
+- [ ] Full documentation site
+- [ ] Full test coverage for packing/indexing
+- [ ] Verified storage integrity guarantees
+- [ ] Stable migrations
+- [ ] Release notes + changelog discipline
+
+### Metrics
+- Safe upgrades
+- Reproducible performance
+
+---
+
+# v1.1+ — Distributed Sharding / Cluster Mode
+
+**Goal:** scale horizontally across machines.
+
+### Deliverables
+- [ ] Sharding by:
+  - topic
+  - time range
+  - centroid hash
+- [ ] Router node (fan-out query)
+- [ ] Distributed top-k merge
+- [ ] Node health metrics + monitoring endpoints
+
+---
+
+# v2.0 — Semantic Data Lake Index
+
+**Goal:** semantic indexing layer for S3/object storage.
+
+### Deliverables
+- [ ] S3-compatible backend for `.tmvec` and `.tmlog`
+- [ ] Scalable metadata store option (Postgres)
+- [ ] Caching proxy nodes
+- [ ] Batch ingestion pipelines
+- [ ] Integration examples with LlamaIndex/LangChain
+
+---
+
+# Contributor-Friendly Areas
+
+If you want to contribute, these are high-impact modules:
+
+### Beginner (Good First Issues)
+- Docs improvements
+- Tests
+- CLI UX
+- Examples and demos
+
+### Intermediate
+- Benchmark harness
+- Scoring fusion logic
+- SQLite optimization
+
+### Advanced
+- Packed embedding codec improvements
+- Replication protocol
+- HNSW/IVF index integration
+- Corruption recovery tools
+
+---
+
+# Guiding Principles
+
+TurboMemory is built around:
+- **Local-first**
+- **Small footprint**
+- **Append-only logs**
+- **Cheap compressed storage**
+- **Self-healing consolidation**
+- **Portable file format**
+- **No cloud dependency**
+
+---
+
+# Long-Term Goal
+
+TurboMemory should become:
+> "The default open storage format for semantic memory and compressed embeddings."
+
+If you want to help build that future, join the project 🚀

@@ -1,2 +1,6 @@
 numpy
 sentence-transformers
+matplotlib
+fastapi
+uvicorn
+python-multipart
