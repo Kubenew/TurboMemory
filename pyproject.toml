@@ -53,6 +53,35 @@ faiss = [
 encryption = [
     "cryptography>=41.0.0",
 ]
+parquet = [
+    "pyarrow>=15.0.0",
+    "pandas>=2.0.0",
+]
+lance = [
+    "pyarrow>=15.0.0",
+    "lance>=0.10.0",
+]
+export = [
+    "pyarrow>=15.0.0",
+    "pandas>=2.0.0",
+    "lance>=0.10.0",
+]
+autostructurer = [
+    "tqdm",
+    "scikit-learn",
+    "python-dateutil",
+    "pypdf",
+    "beautifulsoup4",
+    "opencv-python",
+    "Pillow",
+    "imagehash",
+    "openai-whisper",
+    "ffmpeg-python",
+    "easyocr",
+    "torch",
+    "transformers",
+    "faiss-gpu",
+]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -65,7 +94,7 @@ dev = [
     "psutil>=5.9.0",
 ]
 all = [
-    "turbomemory[langchain,llamaindex,dashboard,server,faiss,encryption,dev]",
+    "turbomemory[langchain,llamaindex,dashboard,server,faiss,encryption,parquet,lance,export,autostructurer,dev]",
 ]
 
 [project.optional-dependencies]
@@ -74,6 +103,8 @@ dev = dev
 [project.scripts]
 turbomemory = "turbomemory.cli:main"
 turbomemory-server = "turbomemory.api.server:run_server"
+autostructurer = "autostructurer_cli:main"
+autostructurer-daemon = "autostructurer_daemon:main"
 
 [project.urls]
 Homepage = "https://github.com/Kubenew/TurboMemory"
@@ -83,10 +114,11 @@ Roadmap = "https://github.com/Kubenew/TurboMemory/blob/main/ROADMAP.md"
 Issues = "https://github.com/Kubenew/TurboMemory/issues"
 
 [project.entry-points."turbomemory.plugins"]
-# Custom plugins can be registered via entry points
+autostructurer = "plugins.autostructurer"
 
 [tool.setuptools.packages.find]
-include = ["turbomemory*"]
+where = ["."]
+include = ["turbomemory*", "plugins*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

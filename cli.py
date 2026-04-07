@@ -222,9 +222,32 @@ def main():
     p.add_argument("--topic", default=None, help="topic name (omit for all)")
     p.add_argument("--with_embeddings", action="store_true", help="include embeddings")
 
+    # export-parquet
+    p = sub.add_parser("export-parquet", help="export to Parquet format")
+    p.add_argument("--output", required=True, help="output .parquet file")
+    p.add_argument("--topic", default=None, help="topic filter")
+    p.add_argument("--format", default="full", choices=["full", "quantized"], help="vector format")
+
+    # export-lance
+    p = sub.add_parser("export-lance", help="export to Lance format")
+    p.add_argument("--uri", required=True, help="Lance dataset URI")
+    p.add_argument("--topic", default=None, help="topic filter")
+    p.add_argument("--format", default="full", choices=["full", "quantized"], help="vector format")
+    p.add_argument("--mode", default="create", choices=["create", "append"], help="write mode")
+
     # import
     p = sub.add_parser("import", help="bulk import from JSON file")
     p.add_argument("--file", required=True, help="JSON file path")
+
+    # import-parquet
+    p = sub.add_parser("import-parquet", help="import from Parquet format")
+    p.add_argument("--input", required=True, help="input .parquet file")
+    p.add_argument("--topic", default=None, help="default topic")
+
+    # import-lance
+    p = sub.add_parser("import-lance", help="import from Lance format")
+    p.add_argument("--uri", required=True, help="Lance dataset URI")
+    p.add_argument("--topic", default=None, help="default topic")
 
     # merge topics
     p = sub.add_parser("merge", help="merge source topic into target")
@@ -308,8 +331,24 @@ def main():
             cmd_restore(tm, args)
         elif args.cmd == "export":
             cmd_export(tm, args)
+        elif args.cmd == "export-parquet":
+            from turbomemory.interop import export_to_parquet
+            result = export_to_parquet(tm.root, args.output, args.format, args.topic)
+            print(json.dumps(result, indent=2))
+        elif args.cmd == "export-lance":
+            from turbomemory.interop import export_to_lance
+            result = export_to_lance(tm.root, args.uri, args.mode, args.format, args.topic)
+            print(json.dumps(result, indent=2))
         elif args.cmd == "import":
             cmd_import(tm, args)
+        elif args.cmd == "import-parquet":
+            from turbomemory.interop import import_from_parquet
+            result = import_from_parquet(tm.root, args.input, args.topic)
+            print(json.dumps(result, indent=2))
+        elif args.cmd == "import-lance":
+            from turbomemory.interop import import_from_lance
+            result = import_from_lance(tm.root, args.uri, args.topic)
+            print(json.dumps(result, indent=2))
         elif args.cmd == "merge":
             cmd_merge(tm, args)
         elif args.cmd == "metrics":
