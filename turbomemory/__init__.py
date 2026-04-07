@@ -31,6 +31,17 @@ from .formats import TMFFormat, TMFIndex, TMFVectorStore, TMFEventLog, validate_
 from .replication import TurboSync, create_sync
 from .hybrid_search import HybridSearch, BM25, HybridSearchEngine
 
+# AutoStructurer (optional - requires extra dependencies)
+try:
+    from .autostructurer import AutoStructurerV5
+    _autostructurer_available = True
+except ImportError:
+    AutoStructurerV5 = None
+    _autostructurer_available = False
+
+# Plugin interface for ETL pipelines like AutoStructurer
+from .storage.plugin_interface import TurboMemoryWriter, TurboMemorySearch, ChunkMetadata
+
 __version__ = "0.5.0"
 __author__ = "Kubenew"
 __description__ = "Lightweight semantic storage with TurboQuant compression"
@@ -78,4 +89,13 @@ __all__ = [
     "HybridSearch",
     "BM25",
     "HybridSearchEngine",
+
+    # AutoStructurer
+    "AutoStructurerV5",
+    "_autostructurer_available",
+
+    # Plugin Interface
+    "TurboMemoryWriter",
+    "TurboMemorySearch",
+    "ChunkMetadata",
 ]

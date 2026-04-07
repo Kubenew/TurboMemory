@@ -103,8 +103,8 @@ dev = dev
 [project.scripts]
 turbomemory = "turbomemory.cli:main"
 turbomemory-server = "turbomemory.api.server:run_server"
-autostructurer = "autostructurer_cli:main"
-autostructurer-daemon = "autostructurer_daemon:main"
+autostructurer = "plugins.autostructurer.cli:main"
+autostructurer-daemon = "plugins.autostructurer.daemon:main"
 
 [project.urls]
 Homepage = "https://github.com/Kubenew/TurboMemory"
