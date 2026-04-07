@@ -361,3 +361,102 @@ class TestContradictionDetection:
         topic_data = tm.load_topic("test")
         decayed_chunks = [c for c in topic_data["chunks"] if c["confidence"] < 0.8]
         assert len(decayed_chunks) > 0
+
+
+class TestTopicPrefilter:
+    def test_select_topics(self, temp_dir):
+        tm = TurboMemory(root=temp_dir, model_name="all-MiniLM-L6-v2")
+        try:
+            tm.add_memory("python", "Python is a programming language")
+            tm.add_memory("javascript", "JavaScript is for web")
+            tm.add_memory("rust", "Rust is systems programming")
+            
+            # Get centroids
+            centroids = tm._get_all_topic_centroids()
+            assert len(centroids) == 3
+            
+            # Test topic selection
+            qemb = tm.model.encode(["programming"])[0]
+            topics = tm._select_topics(qemb, top_t=2)
+            assert len(topics) <= 2
+        finally:
+            tm.close()
+
+
+class TestExclusionRules:
+    def test_exclude_short_text(self, temp_dir):
+        tm = TurboMemory(root=temp_dir, model_name="all-MiniLM-L6-v2")
+        try:
+            from turbomemory.core import ExclusionRules
+            rules = ExclusionRules(min_text_length=10)
+            should_exclude, reason = rules.should_exclude("short", "test")
+            assert should_exclude is True
+        finally:
+            tm.close()
+    
+    def test_exclude_long_text(self, temp_dir):
+        tm = TurboMemory(root=temp_dir, model_name="all-MiniLM-L6-v2")
+        try:
+            from turbomemory.core import ExclusionRules
+            rules = ExclusionRules(max_text_length=100)
+            long_text = "x" * 200
+            should_exclude, reason = rules.should_exclude(long_text, "test")
+            assert should_exclude is True
+        finally:
+            tm.close()
+    
+    def test_exclude_secret(self, temp_dir):
+        tm = TurboMemory(root=temp_dir, model_name="all-MiniLM-L6-v2")
+        try:
+            from turbomemory.core import ExclusionRules
+            rules = ExclusionRules(block_secrets=True)
+            should_exclude, reason = rules.should_exclude("api_key=secret123", "test")
+            assert should_exclude is True
+            assert "secret" in reason.lower()
+        finally:
+            tm.close()
+
+
+class TestQualityScoring:
+    def test_quality_with_numbers(self, temp_dir):
+        tm = TurboMemory(root=temp_dir, model_name="all-MiniLM-L6-v2")
+        try:
+            from turbomemory.core import compute_quality_score
+            score = compute_quality_score(
+                confidence=0.8,
+                staleness=0.2,
+                text="The price is 199.99 dollars on 2024-01-15"
+            )
+            assert score.specificity_component > 0.5
+        finally:
+            tm.close()
+    
+    def test_quality_low_diversity(self, temp_dir):
+        tm = TurboMemory(root=temp_dir, model_name="all-MiniLM-L6-v2")
+        try:
+            from turbomemory.core import compute_quality_score
+            score = compute_quality_score(
+                confidence=0.5,
+                staleness=0.1,
+                text="foo foo foo foo foo"
+            )
+            assert "low_diversity" in score.flags
+        finally:
+            tm.close()
+
+
+class TestBackupRestore:
+    def test_backup_integrity(self, temp_dir):
+        tm = TurboMemory(root=temp_dir, model_name="all-MiniLM-L6-v2")
+        try:
+            tm.add_memory("test", "Backup test content")
+            
+            backup_path = os.path.join(temp_dir, "backup_test")
+            tm.backup(backup_path)
+            
+            # Verify backup contents
+            assert os.path.exists(os.path.join(backup_path, "topics"))
+            assert os.path.exists(os.path.join(backup_path, "db"))
+            assert os.path.exists(os.path.join(backup_path, "backup.json"))
+        finally:
+            tm.close()

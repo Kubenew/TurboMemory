@@ -80,10 +80,13 @@ class MemoryBenchmark:
             # Batch operations
             self.benchmark_batch_operations()
             
-            # Storage size
-            self.benchmark_storage_size()
-            
-            # Recall quality
+        # Storage size
+        self.benchmark_storage_size()
+        
+        # Load time
+        self.benchmark_load_time()
+        
+        # Recall quality
             self.benchmark_recall_quality()
             
         finally:
@@ -297,6 +300,42 @@ class MemoryBenchmark:
         
         self.results.extend(results)
         return results[0]
+    
+    def benchmark_load_time(self) -> BenchmarkResult:
+        """Benchmark time to load copied TMF store."""
+        print("\n=== Load Time Benchmark ===")
+        
+        # Create and populate a store
+        root = self._temp_dir or self.setup()
+        tm = TurboMemory(root=root, model_name="all-MiniLM-L6-v2")
+        
+        for i in range(1000):
+            tm.add_memory("load_test", f"Document {i}", confidence=0.8)
+        
+        tm.close()
+        
+        # Measure load time
+        start = time.time()
+        tm2 = TurboMemory(root=root, model_name="all-MiniLM-L6-v2")
+        load_time = (time.time() - start) * 1000
+        
+        result = BenchmarkResult(
+            name="load_time",
+            duration_ms=load_time,
+            throughput=0,
+            memory_mb=0,
+            metadata={
+                "vectors": 1000,
+                "load_time_ms": load_time,
+            }
+        )
+        
+        print(f"  Loaded 1000 vectors in {load_time:.1f}ms")
+        
+        self.results.append(result)
+        tm2.close()
+        
+        return result
     
     def benchmark_recall_quality(self) -> BenchmarkResult:
         """Benchmark recall quality vs compression."""

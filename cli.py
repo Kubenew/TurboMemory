@@ -251,9 +251,17 @@ def main():
     p = sub.add_parser("bundle", help="create portable bundle")
     p.add_argument("--output", required=True, help="output .tmb file")
 
-    # validate
-    p = sub.add_parser("validate", help="validate TMF integrity")
-    p.add_argument("--path", default=None, help="path to validate")
+    # validate TMF
+    p = sub.add_parser("verify", help="verify TMF store integrity")
+    p.add_argument("--path", default=None, help="path to verify")
+
+    # export-bundle
+    p = sub.add_parser("export-bundle", help="export to portable .tm bundle")
+    p.add_argument("--output", required=True, help="output .tm file")
+
+    # import-bundle
+    p = sub.add_parser("import-bundle", help="import from portable .tm bundle")
+    p.add_argument("--path", required=True, help="input .tm file")
 
     # hybrid search
     p = sub.add_parser("hybrid", help="hybrid search (BM25 + vector)")
@@ -331,11 +339,21 @@ def main():
             tmf = TMFFormat(tm.root)
             result = tmf.export(args.output)
             print(f"Bundle created: {result}")
-        elif args.cmd == "validate":
-            from turbomemory.formats import validate_format
+        elif args.cmd == "verify":
+            from turbomemory.tmf import verify_tmf_store
             path = args.path or tm.root
-            result = validate_format(path)
+            result = verify_tmf_store(path)
             print(json.dumps(result, indent=2))
+        elif args.cmd == "export-bundle":
+            from turbomemory.tmf import TMFStore
+            store = TMFStore(tm.root)
+            result = store.export_bundle(args.output)
+            print(f"Bundle created: {result}")
+        elif args.cmd == "import-bundle":
+            from turbomemory.tmf import TMFStore
+            store = TMFStore(tm.root)
+            store.import_bundle(args.path)
+            print(f"Bundle imported from: {args.path}")
         elif args.cmd == "hybrid":
             from turbomemory.hybrid_search import HybridSearchEngine
             engine = HybridSearchEngine(tm.root)
