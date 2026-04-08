@@ -97,9 +97,6 @@ all = [
     "turbomemory[langchain,llamaindex,dashboard,server,faiss,encryption,parquet,lance,export,autostructurer,dev]",
 ]
 
-[project.optional-dependencies]
-dev = dev
-
 [project.scripts]
 turbomemory = "turbomemory.cli:main"
 turbomemory-server = "turbomemory.api.server:run_server"

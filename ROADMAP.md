@@ -14,7 +14,7 @@ TurboMemory aims to become:
 
 ---
 
-# Current Status: v0.4 (✅ Implemented)
+# Current Status: v0.5 (✅ Released)
 
 - [x] Core memory engine with SQLite + quantization
 - [x] Packed 4-bit / 6-bit / 8-bit embedding storage
@@ -28,47 +28,51 @@ TurboMemory aims to become:
 - [x] LangChain integrations (retriever, chat history)
 - [x] CLI with stats, search, verification flags
 - [x] Streamlit dashboard scaffold
+- [x] TMF v1 storage format specification
+- [x] Hybrid search (BM25 + vector fusion)
+- [x] FastAPI server with multi-tenant support
 
-**What's NOT implemented yet:** PyPI, benchmarks, storage format spec, hybrid search, server mode
+**v0.5 Release includes:** TMF v1 format, verify CLI, Parquet/Lance export, hybrid search, server mode
 
 ---
 
-# v0.5 — Storage Format Specification (TMF v1)
+# v0.5 — Storage Format Specification (TMF v1) ✅
 
 **Goal:** define a stable storage format (Parquet-like for semantic memory).
 
 ### Deliverables
-- [ ] Define "TurboMemory Format (TMF)" v1 spec:
+- [x] Define "TurboMemory Format (TMF)" v1 spec:
   - `.tmindex` (SQLite metadata index)
   - `.tmvec` (packed vectors file)
   - `.tmlog` (append-only transcript/event log)
   - `.tmmeta.json` (schema + model metadata)
-- [ ] Schema versioning + migrations
-- [ ] Checksum verification + corruption detection
-- [ ] Deterministic serialization format for vectors
-- [ ] Fast export/import tooling
+- [x] Schema versioning + migrations
+- [x] Checksum verification + corruption detection
+- [x] Deterministic serialization format for vectors
+- [x] Fast export/import tooling
+- [x] CLI `tm verify` command
 
 ### Metrics
 - Storage can be copied between machines and loaded instantly
 
 ---
 
-# v0.6 — Hybrid Search (Vector + Keyword)
+# v0.6 — Hybrid Search (Vector + Keyword) ✅
 
 **Goal:** become usable for real RAG and enterprise search.
 
 ### Deliverables
-- [ ] BM25 or keyword search fallback
-- [ ] Scoring fusion:
+- [x] BM25 or keyword search fallback
+- [x] Scoring fusion:
   - vector similarity score
   - keyword score
   - recency score
   - confidence score
-- [ ] Metadata filters:
+- [x] Metadata filters:
   - time range
   - topic filter
   - tags/namespace filter
-- [ ] Query explain output (debug mode)
+- [x] Query explain output (debug mode)
 
 ### Metrics
 - Improved retrieval accuracy on real datasets
@@ -76,20 +80,20 @@ TurboMemory aims to become:
 
 ---
 
-# v0.7 — Server Mode (Microservice API)
+# v0.7 — Server Mode (Microservice API) ✅
 
 **Goal:** allow TurboMemory to run as a service.
 
 ### Deliverables
-- [ ] REST API (FastAPI):
+- [x] REST API (FastAPI):
   - `/add`
   - `/bulk_add`
   - `/query`
   - `/delete`
   - `/stats`
-- [ ] Multi-tenant namespaces
-- [ ] API key auth
-- [ ] Docker image
+- [x] Multi-tenant namespaces
+- [x] API key auth
+- [x] Docker image
 - [ ] Rate limiting / request validation
 
 ### Metrics

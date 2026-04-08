@@ -186,7 +186,7 @@ def consolidate_topic(
     staleness_prune: float = 0.90,
     max_chunks: int = 300,
     merge_threshold: float = 0.85,
-    make_absolute: bool = True,
+    convert_to_absolute: bool = True,
 ) -> dict:
     """Consolidate a single topic with full pipeline."""
     topic_data = tm.load_topic(topic)
@@ -218,7 +218,7 @@ def consolidate_topic(
         pruned = merged_chunks
 
     # Step 4: Convert vague to absolute
-    if make_absolute:
+    if convert_to_absolute:
         for c in pruned:
             original = c.get("text", "")
             c["text"] = make_absolute(c["text"])
@@ -337,7 +337,7 @@ def run_once(tm: TurboMemory, args) -> dict:
                 staleness_prune=args.staleness_prune,
                 max_chunks=args.max_chunks,
                 merge_threshold=args.merge_threshold,
-                make_absolute=args.make_absolute,
+                convert_to_absolute=args.convert_to_absolute,
             )
             total_removed += res["removed"]
             total_merged += res["merged"]
@@ -385,6 +385,8 @@ def main():
     parser.add_argument("--interval_sec", type=int, default=120, help="daemon sleep interval")
     parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     args = parser.parse_args()
+
+    args.convert_to_absolute = not args.no_make_absolute
 
     logging.basicConfig(
         level=getattr(logging, args.log_level),

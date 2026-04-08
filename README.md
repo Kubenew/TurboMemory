@@ -249,7 +249,7 @@ response = query_engine.query("your question")
 
 ## Limitations
 
-- **No distributed clustering** - Designed for single-node部署
+- **No distributed clustering** - Designed for single-node deployment
 - **No real-time multi-writer** - Single-writer with eventual consistency via sync
 - **HNSW/IVF not default** - Uses centroid prefilter; optional HNSW available
 - **Model pinned at ingest** - All vectors must use same embedding model
@@ -263,7 +263,7 @@ response = query_engine.query("your question")
 - **Contradiction detection**: Detects conflicting information and adjusts confidence
 - **Consolidation**: Background process to merge/prune/optimize storage
 - **TurboQuant**: 4/6/8-bit packed quantization for embeddings
-- **TMF**: TurboMemory Format - portable storage format
+- **TMF**: [TurboMemory Format](docs/TMF_SPEC.md) - portable storage format specification
 
 ---
 
