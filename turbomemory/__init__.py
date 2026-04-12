@@ -33,7 +33,7 @@ from .hybrid_search import HybridSearch, BM25, HybridSearchEngine
 
 # AutoStructurer (optional - requires extra dependencies)
 try:
-    from .autostructurer import AutoStructurerV5
+    from plugins.autostructurer import AutoStructurerV5
     _autostructurer_available = True
 except ImportError:
     AutoStructurerV5 = None

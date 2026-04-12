@@ -245,6 +245,8 @@ class TurboMemoryConfig:
     """Configuration for TurboMemory."""
     root: str = "turbomemory_data"
     model_name: str = "all-MiniLM-L6-v2"
+    quantization: str = "q6"  # q4, q6, q8, fp16, fp32
+    use_gpu: bool = False
     default_bits: int = 6
     pool_size: int = 5
     default_ttl_days: Optional[float] = None
@@ -262,6 +264,7 @@ class TurboMemoryConfig:
     use_faiss: bool = True
     enable_encryption: bool = False
     encryption_key: Optional[str] = None
+    enable_consolidator: bool = False
 
     @classmethod
     def from_file(cls, path: str) -> "TurboMemoryConfig":
@@ -465,14 +468,35 @@ class TurboMemory:
         self,
         root: str = "turbomemory_data",
         model_name: str = "all-MiniLM-L6-v2",
+        quantization: str = "q6",
+        use_gpu: bool = False,
         config: Optional[TurboMemoryConfig] = None,
     ):
-        self.config = config or TurboMemoryConfig(root=root, model_name=model_name)
+        """Initialize TurboMemory.
+        
+        Args:
+            root: base data directory
+            model_name: name of embedding model to use
+            quantization: quantization type (q4|q6|q8|fp16|fp32)
+            use_gpu: whether to use GPU for embeddings
+            config: TurboMemoryConfig (optional)
+        """
+        if config:
+            self.config = config
+        else:
+            self.config = TurboMemoryConfig(
+                root=root, 
+                model_name=model_name,
+                quantization=quantization,
+                use_gpu=use_gpu,
+            )
         if self.config.exclusion_rules is None:
             self.config.exclusion_rules = ExclusionRules()
 
         self.root = self.config.root
         self.model_name = self.config.model_name
+        self.quantization = self.config.quantization
+        self.use_gpu = self.config.use_gpu
 
         # Lazy model loading
         if self.config.lazy_load_model:
@@ -775,6 +799,9 @@ class TurboMemory:
         query_text: str,
         k: int = 5,
         top_topics: int = 5,
+        topic: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        source: Optional[str] = None,
         min_confidence: Optional[float] = None,
         require_verification: bool = False,
     ) -> List[Tuple[float, str, Dict[str, Any]]]:
@@ -838,7 +865,22 @@ class TurboMemory:
                 "verified": bool(verified),
                 "verification_score": float(verif_score),
                 "cross_refs": int(cross_refs),
+                "topic": topic,
             }
+
+            # Apply tag filter
+            if tags:
+                chunk_tags = set(chunk.get("tags", []))
+                if not any(t in chunk_tags for t in tags):
+                    continue
+
+            # Apply source filter
+            if source and chunk.get("source_ref") != source:
+                continue
+
+            # Apply topic filter
+            if topic and topic != chunk.get("topic"):
+                continue
 
             final_score = sim * (0.5 + conf) * (1.0 - 0.5 * stale) * (0.5 + 0.5 * quality)
             results.append((final_score, topic, chunk))
@@ -1020,6 +1062,51 @@ class TurboMemory:
 
     def stats(self) -> Dict[str, Any]:
         return self.get_metrics().to_dict()
+
+    def reinforce(self, chunk_id: str, topic: str, delta: float = 0.1) -> None:
+        """Increase confidence for an existing memory chunk."""
+        topic_data = self.load_topic(topic)
+        for c in topic_data.get("chunks", []):
+            if c.get("chunk_id") == chunk_id:
+                c["confidence"] = min(float(c.get("confidence", 0.5)) + delta, 1.0)
+                break
+        self.save_topic(topic_data)
+        self._audit.log("reinforce", topic, f"chunk_id={chunk_id}, delta={delta}")
+
+    def penalize(self, chunk_id: str, topic: str, delta: float = 0.1) -> None:
+        """Decrease confidence for an existing memory chunk."""
+        topic_data = self.load_topic(topic)
+        for c in topic_data.get("chunks", []):
+            if c.get("chunk_id") == chunk_id:
+                c["confidence"] = max(float(c.get("confidence", 0.5)) - delta, 0.0)
+                break
+        self.save_topic(topic_data)
+        self._audit.log("penalize", topic, f"chunk_id={chunk_id}, delta={delta}")
+
+    def forget(self, chunk_id: str, topic: str) -> None:
+        """Soft forget: decay confidence to near zero."""
+        self.penalize(chunk_id, topic, delta=1.0)
+
+    def recall_topic(self, topic: str, top_k: int = 10) -> List[Tuple[float, str, Dict[str, Any]]]:
+        """Recall all memories for a topic."""
+        return self.query_slow("", k=top_k, topic=topic)
+
+    def get_chunk(self, chunk_id: str, topic: str) -> Optional[Dict[str, Any]]:
+        """Get a specific chunk by ID."""
+        topic_data = self.load_topic(topic)
+        for c in topic_data.get("chunks", []):
+            if c.get("chunk_id") == chunk_id:
+                return c
+        return None
+
+    def list_topics(self) -> List[str]:
+        """List all available topics."""
+        topics = []
+        for fn in os.listdir(self.topics_dir):
+            if fn.endswith(".tmem"):
+                topic_data = self.load_topic(fn[:-5])
+                topics.append(topic_data.get("topic"))
+        return topics
 
     def close(self) -> None:
         self._shutdown.shutdown()
