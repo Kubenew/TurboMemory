@@ -56,6 +56,9 @@ def cmd_query(tm: TurboMemory, args):
             args.query,
             k=args.k,
             top_topics=args.top_topics,
+            topic=args.topic,
+            tags=args.tags.split(",") if args.tags else None,
+            source=args.source,
             min_confidence=args.min_confidence,
             require_verification=args.require_verified,
         )
@@ -188,6 +191,9 @@ def main():
     p.add_argument("--query", required=True)
     p.add_argument("--k", type=int, default=5)
     p.add_argument("--top_topics", type=int, default=5)
+    p.add_argument("--topic", default=None, help="filter by topic")
+    p.add_argument("--tags", default=None, help="filter by tags (comma-separated)")
+    p.add_argument("--source", default=None, help="filter by source")
     p.add_argument("--min_confidence", type=float, default=0.0)
     p.add_argument("--verify", action="store_true", help="enable verification")
     p.add_argument("--require_verified", action="store_true", help="only return verified results")
