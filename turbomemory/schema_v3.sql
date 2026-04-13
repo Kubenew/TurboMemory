@@ -78,3 +78,12 @@ CREATE TABLE IF NOT EXISTS wal_log (
     memory_id       INTEGER,
     details         TEXT
 );
+
+-- Topic centroids for fast prefiltering
+CREATE TABLE IF NOT EXISTS topic_centroids (
+    topic               TEXT PRIMARY KEY,
+    centroid_dim       INTEGER NOT NULL,
+    centroid_dtype     TEXT NOT NULL,
+    centroid_blob      BLOB NOT NULL,
+    updated_at         INTEGER NOT NULL
+);

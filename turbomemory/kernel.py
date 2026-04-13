@@ -14,8 +14,16 @@ from .config import TurboMemoryConfig
 from .storage.sqlite_store import SQLiteStore
 from .storage.wal import WAL
 from .embeddings.st_backend import SentenceTransformersBackend
-from .quant.qpack import pack_q8
+from .quant.qpack import pack_q4, pack_q6, pack_q8
+from .quant.dotprod import BITS_MAP
 from .retrieval.pipeline import RetrievalPipeline
+
+# Quantization function map
+QUANT_FUNCS = {
+    "q4": pack_q4,
+    "q6": pack_q6,
+    "q8": pack_q8,
+}
 
 class TurboMemoryKernel:
     """TurboMemory v3 kernel."""
