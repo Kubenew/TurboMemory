@@ -9,6 +9,10 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+# v3 components
+from .pipeline import RetrievalPipeline, CentroidFilter, SearchResult
+from .faiss_index import FAISSIndex, TopicFAISSIndex, create_faiss_index
+
 
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
     """Compute cosine similarity between two vectors."""

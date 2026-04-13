@@ -15,6 +15,11 @@ import hashlib
 
 logger = logging.getLogger(__name__)
 
+# v3 storage components
+from .sqlite_store import SQLiteStoreV3
+from .wal import WALLog, WALReader, WALWriter
+from .segments import SegmentManager, SegmentReader, SegmentWriter
+
 
 @dataclass
 class RetryConfig:

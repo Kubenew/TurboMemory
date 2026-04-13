@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any, Tuple, Iterator, Set, Callable
+import importlib.util
 from pathlib import Path
 from functools import lru_cache
 
@@ -265,6 +266,34 @@ class TurboMemoryConfig:
     enable_encryption: bool = False
     encryption_key: Optional[str] = None
     enable_consolidator: bool = False
+
+    def set_embedding_backend(self, backend: "EmbeddingBackend") -> None:
+        """Set custom embedding backend."""
+        self._embedding_backend = backend
+
+
+class EmbeddingBackend:
+    """Abstract embedding backend - implement for custom providers."""
+    
+    def encode(self, texts: List[str]) -> np.ndarray:
+        """Encode texts to embeddings."""
+        raise NotImplementedError
+
+    def encode_single(self, text: str) -> np.ndarray:
+        """Encode single text."""
+        return self.encode([text])[0]
+
+
+class SentenceTransformerBackend(EmbeddingBackend):
+    """Default sentence-transformers backend."""
+    
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2", use_gpu: bool = False):
+        from sentence_transformers import SentenceTransformer
+        device = "cuda" if use_gpu and importlib.util.find_spec("torch") else "cpu"
+        self.model = SentenceTransformer(model_name, device=device)
+    
+    def encode(self, texts: List[str]) -> np.ndarray:
+        return self.model.encode(texts, convert_to_numpy=True)
 
     @classmethod
     def from_file(cls, path: str) -> "TurboMemoryConfig":
@@ -658,6 +687,9 @@ class TurboMemory:
             "chunk_id": chunk_id,
             "timestamp": now_iso(),
             "confidence": float(confidence),
+            "importance": float(confidence),
+            "access_count": 0,
+            "last_accessed": None,
             "staleness": 0.0,
             "entropy": entropy_score,
             "text": text,
