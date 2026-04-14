@@ -108,7 +108,10 @@ __all__ = [
     "TurboMemorySearch",
     "ChunkMetadata",
 
-    # v3
-    "ConfigV3",
-    "TurboMemoryV3",
+# v3
+    'ConfigV3',
+    'TurboMemoryV3',
+
+    # CLI
+    'cli',
 ]

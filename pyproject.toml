@@ -1,142 +1,142 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ['setuptools>=68.0', 'wheel']
+build-backend = 'setuptools.build_meta'
 
 [project]
-name = "turbomemory"
-version = "0.5.0"
-description = "Lightweight semantic storage engine with compressed embedding archives"
-readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.9"
+name = 'turbomemory'
+version = '0.5.0'
+description = 'Lightweight semantic storage engine with compressed embedding archives'
+readme = 'README.md'
+license = {text = 'MIT'}
+requires-python = '>=3.9'
 authors = [
-    {name = "Kubenew"}
+    {name = 'Kubenew'}
 ]
-keywords = ["memory", "quantization", "semantic-search", "embeddings", "vector-store", "langchain", "rag", "local-first"]
+keywords = ['memory', 'quantization', 'semantic-search', 'embeddings', 'vector-store', 'langchain', 'rag', 'local-first']
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Topic :: Scientific/Engineering :: Artificial Intelligence',
 ]
 
 dependencies = [
-    "numpy>=1.24.0",
-    "sentence-transformers>=2.2.0",
+    'numpy>=1.24.0',
+    'sentence-transformers>=2.2.0',
 ]
 
 [project.optional-dependencies]
 langchain = [
-    "langchain>=0.1.0",
-    "langchain-core>=0.1.0",
+    'langchain>=0.1.0',
+    'langchain-core>=0.1.0',
 ]
 llamaindex = [
-    "llama-index>=0.9.0",
+    'llama-index>=0.9.0',
 ]
 dashboard = [
-    "streamlit>=1.28.0",
+    'streamlit>=1.28.0',
 ]
 server = [
-    "fastapi>=0.100.0",
-    "uvicorn[standard]>=0.23.0",
-    "pydantic>=2.0.0",
-    "requests>=2.31.0",
+    'fastapi>=0.100.0',
+    'uvicorn[standard]>=0.23.0',
+    'pydantic>=2.0.0',
+    'requests>=2.31.0',
 ]
 faiss = [
-    "faiss-cpu>=1.7.0",
+    'faiss-cpu>=1.7.0',
 ]
 encryption = [
-    "cryptography>=41.0.0",
+    'cryptography>=41.0.0',
 ]
 parquet = [
-    "pyarrow>=15.0.0",
-    "pandas>=2.0.0",
+    'pyarrow>=15.0.0',
+    'pandas>=2.0.0',
 ]
 lance = [
-    "pyarrow>=15.0.0",
-    "lance>=0.10.0",
+    'pyarrow>=15.0.0',
+    'lance>=0.10.0',
 ]
 export = [
-    "pyarrow>=15.0.0",
-    "pandas>=2.0.0",
-    "lance>=0.10.0",
+    'pyarrow>=15.0.0',
+    'pandas>=2.0.0',
+    'lance>=0.10.0',
 ]
 autostructurer = [
-    "tqdm",
-    "scikit-learn",
-    "python-dateutil",
-    "pypdf",
-    "beautifulsoup4",
-    "opencv-python",
-    "Pillow",
-    "imagehash",
-    "openai-whisper",
-    "ffmpeg-python",
-    "easyocr",
-    "torch",
-    "transformers",
-    "faiss-gpu",
+    'tqdm',
+    'scikit-learn',
+    'python-dateutil',
+    'pypdf',
+    'beautifulsoup4',
+    'opencv-python',
+    'Pillow',
+    'imagehash',
+    'openai-whisper',
+    'ffmpeg-python',
+    'easyocr',
+    'torch',
+    'transformers',
+    'faiss-gpu',
 ]
 dev = [
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-benchmark>=4.0",
-    "black>=23.0",
-    "ruff>=0.1.0",
-    "mypy>=1.0",
-    "pyright>=1.1.0",
-    "psutil>=5.9.0",
+    'pytest>=7.0',
+    'pytest-cov>=4.0',
+    'pytest-asyncio>=0.21.0',
+    'pytest-benchmark>=4.0',
+    'black>=23.0',
+    'ruff>=0.1.0',
+    'mypy>=1.0',
+    'pyright>=1.1.0',
+    'psutil>=5.9.0',
 ]
 all = [
-    "turbomemory[langchain,llamaindex,dashboard,server,faiss,encryption,parquet,lance,export,autostructurer,dev]",
+    'turbomemory[langchain,llamaindex,dashboard,server,faiss,encryption,parquet,lance,export,autostructurer,dev]',
 ]
 
 [project.scripts]
-turbomemory = "turbomemory.cli:main"
-turbomemory-server = "turbomemory.api.server:run_server"
-autostructurer = "plugins.autostructurer.cli:main"
-autostructurer-daemon = "plugins.autostructurer.daemon:main"
+turbomemory = 'turbomemory.cli:main'
+turbomemory-server = 'turbomemory.api.server:run_server'
+turbomemory-daemon = 'turbomemory.daemon.cli:main'
+consolidator = 'turbomemory.daemon.consolidator:main'
 
 [project.urls]
-Homepage = "https://github.com/Kubenew/TurboMemory"
-Repository = "https://github.com/Kubenew/TurboMemory"
-Documentation = "https://github.com/Kubenew/TurboMemory#readme"
-Roadmap = "https://github.com/Kubenew/TurboMemory/blob/main/ROADMAP.md"
-Issues = "https://github.com/Kubenew/TurboMemory/issues"
+Homepage = 'https://github.com/Kubenew/TurboMemory'
+Repository = 'https://github.com/Kubenew/TurboMemory'
+Documentation = 'https://github.com/Kubenew/TurboMemory#readme'
+Roadmap = 'https://github.com/Kubenew/TurboMemory/blob/main/ROADMAP.md'
+Issues = 'https://github.com/Kubenew/TurboMemory/issues'
 
-[project.entry-points."turbomemory.plugins"]
-autostructurer = "plugins.autostructurer"
+[project.entry-points.'turbomemory.plugins']
+autostructurer = 'plugins.autostructurer'
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["turbomemory*", "plugins*"]
+where = ['.']
+include = ['turbomemory*', 'plugins*']
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = ["test_*.py"]
-asyncio_mode = "auto"
-addopts = "-ra -q --strict-markers"
+testpaths = ['tests']
+python_files = ['test_*.py']
+asyncio_mode = 'auto'
+addopts = '-ra -q --strict-markers'
 
 [tool.black]
 line-length = 100
-target-version = ["py39"]
+target-version = ['py39']
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "T20"]
-ignore = ["E501", "B008"]
-fixable = ["ALL"]
+target-version = 'py39'
+select = ['E', 'F', 'W', 'I', 'N', 'UP', 'B', 'A', 'C4', 'T20']
+ignore = ['E501', 'B008']
+fixable = ['ALL']
 unfixable = []
 
 [tool.mypy]
-python_version = "3.9"
+python_version = '3.9'
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
@@ -144,8 +144,8 @@ warn_unreachable = true
 strict_equality = true
 
 [tool.pyright]
-include = ["turbomemory"]
-pythonVersion = "3.9"
-typeCheckingMode = "basic"
+include = ['turbomemory']
+pythonVersion = '3.9'
+typeCheckingMode = 'basic'
 reportMissingImports = true
 reportMissingTypeStubs = false
