@@ -29,8 +29,8 @@ from .core import EmbeddingBackend, SentenceTransformerBackend
 from .storage import StorageManager, SQLitePool, RetryConfig, MigrationManager
 from .retrieval import RetrievalEngine, cosine_similarity
 
-# v3 imports
-from .config import TurboMemoryConfig as ConfigV3
+# v3 config (different from v0.5)
+from .config import TurboMemoryConfig as TurboMemoryConfigV3
 from .turbomemory_v3 import TurboMemory as TurboMemoryV3
 from .formats import TMFFormat, TMFIndex, TMFVectorStore, TMFEventLog, validate_format
 from .replication import TurboSync, create_sync
@@ -109,7 +109,7 @@ __all__ = [
     "ChunkMetadata",
 
 # v3
-    'ConfigV3',
+    'TurboMemoryConfigV3',
     'TurboMemoryV3',
 
     # CLI
