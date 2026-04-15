@@ -5,6 +5,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml requirements.txt ./
@@ -18,4 +19,7 @@ ENV TURBOMEMORY_PORT=8000
 
 EXPOSE 8000
 
-CMD ["python", "-m", "turbomemory.server.main"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["python", "-m", "turbomemory.api.server"]
