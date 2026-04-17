@@ -121,12 +121,14 @@ class ExclusionRules:
         if self.block_secrets:
             secret_patterns = [
                 r"(password|passwd|pwd)\s*[=:]\s*\S+",
-                r"(api[_-]?key|apikey)\s*[=:]\s*\S+",
-                r"(secret|token)\s*[=:]\s*\S+",
+                r"(api[_-]?key|apikey)\s*[=:]\s*[A-Za-z0-9_\-]+",
+                r"(secret|token)\s*[=:]\s*[A-Za-z0-9_\-]{8,}",
                 r"-----BEGIN\s+(RSA\s+)?PRIVATE\s+KEY-----",
                 r"(bearer\s+)?token\s*[=:]\s*[A-Za-z0-9_\-.]+",
                 r"sk-[A-Za-z0-9]{20,}",
                 r"ghp_[A-Za-z0-9]{36}",
+                r"xox[baprs]-[A-Za-z0-9]{10,}",
+                r"sq0[a-z]{3}-[A-Za-z0-9]{22}",
             ]
             for pattern in secret_patterns:
                 if re.search(pattern, text_lower):
