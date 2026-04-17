@@ -1,7 +1,7 @@
 """Quantization module for packed embedding storage."""
 
 import base64
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple, Optional, List
 import numpy as np
 
 

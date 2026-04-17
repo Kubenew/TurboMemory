@@ -68,7 +68,9 @@ class LazyModel:
     def encode_async(self, texts: List[str], **kwargs) -> asyncio.Future:
         """Async wrapper for encode."""
         loop = asyncio.get_event_loop()
-        return loop.run_in_executor(None, self.encode, texts, **kwargs)
+        from functools import partial
+        func = partial(self.encode, texts, **kwargs)
+        return loop.run_in_executor(None, func)
 
     def reset(self) -> None:
         """Reset the model (for testing or memory management)."""
@@ -1141,9 +1143,12 @@ class TurboMemory:
                 topic_data = self.load_topic(fn[:-5])
                 topics.append(topic_data.get("topic"))
         return topics
-
     def close(self) -> None:
-        self._shutdown.shutdown()
+        if getattr(self, '_closed', False):
+            return
+        self._closed = True
+        if hasattr(self, '_shutdown'):
+            self._shutdown.shutdown()
         self._storage.close()
 
     def __enter__(self):

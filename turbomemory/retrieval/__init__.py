@@ -60,7 +60,7 @@ class NumpyIndex(VectorIndex):
     def __init__(self, dimension: int):
         self.dimension = dimension
         self._vectors: List[np.ndarray] = []
-        self._ids: List[str] = {}
+        self._ids: List[str] = []
 
     def add_vectors(self, vectors: np.ndarray, ids: List[str]) -> None:
         for vec, id_ in zip(vectors, ids):

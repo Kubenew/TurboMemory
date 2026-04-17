@@ -52,7 +52,7 @@ class TestCLI:
         # First add data
         subprocess.run(
             [sys.executable, "-m", "turbomemory", "add_memory",
-             "--topic", "test", "--text": "Test content", "--root", temp_dir],
+             "--topic", "test", "--text", "Test content", "--root", temp_dir],
             capture_output=True,
             timeout=60
         )
