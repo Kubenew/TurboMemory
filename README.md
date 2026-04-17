@@ -3,8 +3,9 @@
 [![PyPI Version](https://img.shields.io/pypi/v/turbomemory)](https://pypi.org/project/turbomemory/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/turbomemory)](https://pypi.org/project/turbomemory/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/Kubenew/TurboMemory/actions/workflows/ci.yml/badge.svg)](https://github.com/Kubenew/TurboMemory/actions)
-[![Code Coverage](https://img.shields.io/codecov/c/github/Kubenew/TurboMemory)](https://codecov.io/gh/Kubenew/TurboMemory)
+[![Tests](https://github.com/Kubenew/TurboMemory/actions/workflows/tests.yml/badge.svg)](https://github.com/Kubenew/TurboMemory/actions/workflows/tests.yml)
+[![Lint](https://github.com/Kubenew/TurboMemory/actions/workflows/lint.yml/badge.svg)](https://github.com/Kubenew/TurboMemory/actions/workflows/lint.yml)
+[![Code Coverage](https://codecov.io/gh/Kubenew/TurboMemory/branch/main/graph/badge.svg)](https://codecov.io/gh/Kubenew/TurboMemory)
 [![Downloads](https://img.shields.io/pypi/dm/turbomemory)](https://pypi.org/project/turbomemory/)
 
 **TurboMemory is a lightweight semantic storage engine for compressed embedding archives.**
