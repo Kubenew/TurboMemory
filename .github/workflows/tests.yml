@@ -2,31 +2,46 @@ name: Tests
 
 on:
   push:
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest
+          pip install -e ".[all]"
+          pip install pytest pytest-cov ruff black mypy
 
-      - name: Run tests
+      - name: Lint with ruff and black
         run: |
-          pytest -q
+          ruff check .
+          black --check .
+
+      - name: Type checking with mypy
+        run: mypy turbomemory || echo "mypy warnings allowed for now"
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ --cov=turbomemory --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
