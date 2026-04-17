@@ -47,7 +47,7 @@ except ImportError:
 # Plugin interface for ETL pipelines like AutoStructurer
 from .storage.plugin_interface import TurboMemoryWriter, TurboMemorySearch, ChunkMetadata
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 __author__ = "Kubenew"
 __description__ = "Lightweight semantic storage with TurboQuant compression"
 

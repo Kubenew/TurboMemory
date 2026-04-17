@@ -66,14 +66,14 @@ def create_app(tm: TurboMemory) -> FastAPI:
     app = FastAPI(
         title="TurboMemory API",
         description="Lightweight semantic storage engine with compressed embeddings",
-        version="0.5.0",
+        version="0.5.1",
         lifespan=lifespan,
     )
 
     @app.get("/health")
     async def health_check():
         """Health check endpoint."""
-        return {"status": "healthy", "version": "0.5.0"}
+        return {"status": "healthy", "version": "0.5.1"}
 
     @app.post("/memory")
     async def add_memory(

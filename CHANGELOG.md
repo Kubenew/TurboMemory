@@ -28,6 +28,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.1] - 2026-04-17
+
+### Fixed
+- Fixed NumpyIndex `_ids` initialization bug that caused `AttributeError` upon list appending.
+- Fixed `encode_async` passing unsupported `**kwargs` directly to `run_in_executor` by utilizing `functools.partial`.
+- Fixed syntax error in `tests/test_cli.py`.
+- Fixed `List` missing type hint import in `quantization.py`.
+- Prevented infinite recursion in core memory management shutdown process.
+
 ## [0.5.0] - 2024-XX-XX
 
 ### Added

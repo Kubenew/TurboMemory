@@ -31,7 +31,7 @@ from .formats import TMFFormat, TMFIndex, TMFVectorStore, TMFEventLog, validate_
 from .replication import TurboSync, create_sync
 from .hybrid_search import HybridSearch, BM25, HybridSearchEngine
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 __author__ = "Kubenew"
 __description__ = "Lightweight semantic storage with TurboQuant compression"
 

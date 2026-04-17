@@ -108,7 +108,7 @@ def create_app(config: Optional[ServerConfig] = None) -> FastAPI:
     app = FastAPI(
         title="TurboMemory API",
         description="SQLite for semantic data + zstd for embeddings",
-        version="0.5.0",
+        version="0.5.1",
         docs_url="/docs",
         redoc_url="/redoc",
         lifespan=lifespan,
@@ -117,7 +117,7 @@ def create_app(config: Optional[ServerConfig] = None) -> FastAPI:
 
     @app.get("/health")
     async def health_check():
-        return {"status": "healthy", "version": "0.5.0", "namespaces_enabled": config.enable_namespaces}
+        return {"status": "healthy", "version": "0.5.1", "namespaces_enabled": config.enable_namespaces}
 
     @app.post("/memory")
     async def add_memory(request: AddMemoryRequest, tm: TurboMemory = Depends(get_tm)):
