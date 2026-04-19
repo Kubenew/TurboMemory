@@ -1,0 +1,73 @@
+name: Manual Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 0.5.3)'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Update version in pyproject.toml
+        run: |
+          sed -i 's/version = ".*"/version = "${{ inputs.version }}"/' pyproject.toml
+          cat pyproject.toml | head -10
+
+      - name: Build package
+        run: |
+          python -m build
+          ls -la dist/
+
+      - name: Publish to PyPI (Test)
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          echo "=== Uploading to Test PyPI ==="
+          twine upload --repository testpypi dist/* --verbose || {
+            echo "=== Test upload failed ==="
+            exit 1
+          }
+
+      - name: Wait for propagation
+        run: sleep 10
+
+      - name: Verify on Test PyPI
+        run: |
+          echo "=== Checking Test PyPI ==="
+          pip install --index-url https://test.pypi.org/simple/ turbomemory==${{ inputs.version }} || echo "Not found on Test PyPI"
+
+      - name: Publish to PyPI (Production)
+        if: success()
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          echo "=== Uploading to Production PyPI ==="
+          twine upload dist/* --verbose || {
+            echo "=== Production upload failed ==="
+            exit 1
+          }
+
+      - name: Final verification
+        if: success()
+        run: |
+          echo "=== Checking Production PyPI ==="
+          pip install turbomemory==${{ inputs.version }} || echo "Install failed"
+          pip show turbomemory
